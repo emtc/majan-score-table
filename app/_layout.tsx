@@ -12,7 +12,7 @@ import {
   ShipporiMincho_800ExtraBold,
 } from '@expo-google-fonts/shippori-mincho';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import { SubscriptionProvider } from '../src/context/SubscriptionContext';
@@ -31,20 +31,27 @@ export default function RootLayout() {
     ShipporiMincho_800ExtraBold,
   });
 
+  // ATT 許可ダイアログの完了を待つ（iOS のみ）
+  // 広告 SDK がデータ収集を始める前に許可を得るため、
+  // 許可が解決するまでスプラッシュ画面を維持しアプリをレンダリングしない
+  const [attReady, setAttReady] = useState(Platform.OS !== 'ios');
+
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
+    if (!loaded || Platform.OS !== 'ios') return;
+    requestTrackingPermissionsAsync().finally(() => {
+      setAttReady(true);
+    });
   }, [loaded]);
 
   useEffect(() => {
-    if (!loaded || Platform.OS !== 'ios') return;
-    requestTrackingPermissionsAsync();
-  }, [loaded]);
+    if (loaded && attReady) SplashScreen.hideAsync();
+  }, [loaded, attReady]);
 
-  if (!loaded) return null;
+  if (!loaded || !attReady) return null;
 
   return (
     <SubscriptionProvider>

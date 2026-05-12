@@ -63,7 +63,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
         errorRef.current = iap!.purchaseErrorListener((error: any) => {
           setLoading(false);
-          if (error.code !== 'E_USER_CANCELLED') {
+          const code = error.code ?? '';
+          if (code !== 'UserCancelled' && code !== 'E_USER_CANCELLED') {
             Alert.alert('購入エラー', error.message ?? '購入に失敗しました');
           }
         });
@@ -85,10 +86,17 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     if (Platform.OS === 'web' || !iap) return;
     setLoading(true);
     try {
-      await iap!.requestSubscription({ sku: SUBSCRIPTION_SKU });
+      await (iap! as any).requestPurchase({
+        request: {
+          apple: { sku: SUBSCRIPTION_SKU },
+          google: { skus: [SUBSCRIPTION_SKU] },
+        },
+        type: 'subs',
+      });
     } catch (e: any) {
       setLoading(false);
-      if (e.code !== 'E_USER_CANCELLED') {
+      const code = e.code ?? '';
+      if (code !== 'UserCancelled' && code !== 'E_USER_CANCELLED') {
         Alert.alert('購入エラー', e.message ?? '購入に失敗しました');
       }
     }

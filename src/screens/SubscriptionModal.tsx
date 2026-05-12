@@ -1,11 +1,14 @@
 import React from 'react';
 import {
-  ActivityIndicator, Modal, Pressable, StyleSheet, Text, View,
+  ActivityIndicator, Linking, Modal, Pressable, StyleSheet, Text, View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { F, M } from '../theme';
 import { useSubscription } from '../context/SubscriptionContext';
+
+const PRIVACY_URL = 'https://emtc.github.io/majan-score-table/privacy-policy.html';
+const EULA_URL = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 
 export function SubscriptionModal() {
   const { modalVisible, closeModal, purchase, restore, loading } = useSubscription();
@@ -71,6 +74,16 @@ export function SubscriptionModal() {
             次回更新日の24時間前までキャンセルできます。
           </Text>
 
+          <View style={styles.legalLinks}>
+            <Pressable onPress={() => Linking.openURL(PRIVACY_URL)}>
+              <Text style={styles.legalLink}>プライバシーポリシー</Text>
+            </Pressable>
+            <Text style={styles.legalLinkSep}>　|　</Text>
+            <Pressable onPress={() => Linking.openURL(EULA_URL)}>
+              <Text style={styles.legalLink}>利用規約</Text>
+            </Pressable>
+          </View>
+
         </Pressable>
       </BlurView>
     </Modal>
@@ -134,5 +147,15 @@ const styles = StyleSheet.create({
   legal: {
     fontFamily: F.serif, fontSize: 10, color: M.ivoryDim,
     opacity: 0.35, textAlign: 'center', lineHeight: 16, marginTop: 20,
+  },
+  legalLinks: {
+    flexDirection: 'row', alignItems: 'center', marginTop: 10,
+  },
+  legalLink: {
+    fontFamily: F.serif, fontSize: 11, color: M.ivoryDim,
+    textDecorationLine: 'underline', opacity: 0.6,
+  },
+  legalLinkSep: {
+    fontFamily: F.serif, fontSize: 11, color: M.ivoryDim, opacity: 0.3,
   },
 });
