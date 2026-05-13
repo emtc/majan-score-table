@@ -3,7 +3,7 @@ import React, {
 } from 'react';
 import { Alert, Platform } from 'react-native';
 
-export const SUBSCRIPTION_SKU = 'premium_monthly';
+export const SUBSCRIPTION_SKU = 'com.emtc.mahjongscore.adfree.monthly';
 
 // react-native-iap uses NitroModules which are unavailable in Expo Go.
 // Wrap the require in a try-catch so the app can still launch for UI testing.
