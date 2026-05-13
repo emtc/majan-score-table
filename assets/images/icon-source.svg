@@ -77,21 +77,21 @@
   <rect width="500" height="500" fill="url(#bg-glow)" />
 
   <!-- アプリ名 大きく -->
-  <text x="250" y="126" fill="url(#gold-h)" filter="url(#text-glow)"
+  <text x="250" y="143" fill="url(#gold-h)" filter="url(#text-glow)"
     font-family="'Shippori Mincho', serif" font-size="118" font-weight="800"
     text-anchor="middle" letter-spacing="10">麻雀</text>
-  <text x="250" y="255" fill="url(#gold-h)" filter="url(#text-glow)"
+  <text x="250" y="272" fill="url(#gold-h)" filter="url(#text-glow)"
     font-family="'Shippori Mincho', serif" font-size="118" font-weight="800"
     text-anchor="middle" letter-spacing="4">点数卓</text>
 
   <!-- 細い金ライン（区切り） -->
-  <line x1="60" y1="272" x2="440" y2="272" stroke="url(#gold-h)" stroke-width="1.5" opacity="0.5" />
+  <line x1="60" y1="289" x2="440" y2="289" stroke="url(#gold-h)" stroke-width="1.5" opacity="0.5" />
 
   <!-- スコア枠 -->
-  <rect x="40" y="284" width="420" height="156" rx="14" fill="#000000" stroke="url(#gold)" stroke-width="2.5"/>
+  <rect x="40" y="301" width="420" height="156" rx="14" fill="#000000" stroke="url(#gold)" stroke-width="2.5"/>
 
   <!-- 7セグ背景 -->
-  <g fill="#2a1400" transform="translate(86, 308) scale(1.55) skewX(-10)">
+  <g fill="#2a1400" transform="translate(86, 325) scale(1.55) skewX(-10)">
     <use href="#digit-bg" x="0" y="0" />
     <use href="#digit-bg" x="46" y="0" />
     <use href="#digit-bg" x="92" y="0" />
@@ -100,7 +100,7 @@
   </g>
 
   <!-- 25000 -->
-  <g fill="#FF9900" filter="url(#glow)" transform="translate(86, 308) scale(1.55) skewX(-10)">
+  <g fill="#FF9900" filter="url(#glow)" transform="translate(86, 325) scale(1.55) skewX(-10)">
     <use href="#digit-2" x="0" y="0" />
     <use href="#digit-5" x="46" y="0" />
     <use href="#digit-0" x="92" y="0" />
@@ -109,5 +109,5 @@
   </g>
 
   <!-- 下部：細いゴールドライン -->
-  <line x1="60" y1="462" x2="440" y2="462" stroke="url(#gold-h)" stroke-width="1" opacity="0.3" />
+  <line x1="60" y1="479" x2="440" y2="479" stroke="url(#gold-h)" stroke-width="1" opacity="0.3" />
 </svg>

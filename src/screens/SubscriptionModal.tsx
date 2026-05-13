@@ -70,7 +70,7 @@ export function SubscriptionModal() {
           </Pressable>
 
           <Text style={styles.legal}>
-            購入はApple ID / Googleアカウントに課金されます。{'\n'}
+            購入はApple IDに課金されます。{'\n'}
             次回更新日の24時間前までキャンセルできます。
           </Text>
 
