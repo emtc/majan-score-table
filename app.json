@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "majan-score-table",
+    "name": "麻雀点数卓",
     "slug": "majan-score-table",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "majanscoretable",
@@ -17,9 +17,13 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.emtc.mahjongscore",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDevelopmentRegion": "ja",
+        "CFBundleLocalizations": [
+          "ja"
+        ]
       },
-      "buildNumber": "7"
+      "buildNumber": "16"
     },
     "android": {
       "adaptiveIcon": {

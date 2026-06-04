@@ -4,6 +4,7 @@ import React, {
 import { Alert, Platform } from 'react-native';
 
 export const SUBSCRIPTION_SKU = 'com.emtc.mahjongscore.adfree.monthly';
+export const LIFETIME_SKU = 'com.emtc.mahjongscore.adfree.lifetime';
 
 // react-native-iap uses NitroModules which are unavailable in Expo Go.
 // Wrap the require in a try-catch so the app can still launch for UI testing.
@@ -20,7 +21,7 @@ interface ContextValue {
   modalVisible: boolean;
   openModal: () => void;
   closeModal: () => void;
-  purchase: () => Promise<void>;
+  purchase: (plan: 'subscription' | 'lifetime') => Promise<void>;
   restore: () => Promise<void>;
 }
 
@@ -51,10 +52,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         await iap!.initConnection();
 
         const purchases = await iap!.getAvailablePurchases();
-        setIsSubscribed(purchases.some(p => p.productId === SUBSCRIPTION_SKU));
+        setIsSubscribed(purchases.some(p => p.productId === SUBSCRIPTION_SKU || p.productId === LIFETIME_SKU));
 
         updateRef.current = iap!.purchaseUpdatedListener(purchase => {
-          if (purchase.productId === SUBSCRIPTION_SKU) {
+          if (purchase.productId === SUBSCRIPTION_SKU || purchase.productId === LIFETIME_SKU) {
             setIsSubscribed(true);
             setLoading(false);
             setModalVisible(false);
@@ -82,16 +83,18 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     };
   }, []);
 
-  const purchase = useCallback(async () => {
+  const purchase = useCallback(async (plan: 'subscription' | 'lifetime') => {
     if (Platform.OS === 'web' || !iap) return;
     setLoading(true);
+    const sku = plan === 'lifetime' ? LIFETIME_SKU : SUBSCRIPTION_SKU;
+    const type = plan === 'lifetime' ? 'inapp' : 'subs';
     try {
       await (iap! as any).requestPurchase({
         request: {
-          apple: { sku: SUBSCRIPTION_SKU },
-          google: { skus: [SUBSCRIPTION_SKU] },
+          apple: { sku },
+          google: { skus: [sku] },
         },
-        type: 'subs',
+        type,
       });
     } catch (e: any) {
       setLoading(false);
@@ -107,7 +110,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     setLoading(true);
     try {
       const purchases = await iap!.getAvailablePurchases();
-      const active = purchases.some(p => p.productId === SUBSCRIPTION_SKU);
+      const active = purchases.some(p => p.productId === SUBSCRIPTION_SKU || p.productId === LIFETIME_SKU);
       setIsSubscribed(active);
       Alert.alert(
         '購入の復元',

@@ -3,6 +3,7 @@ import {
   View, Text, Modal, Pressable, ScrollView,
   TextInput, StyleSheet, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
+import { useTabletLayout } from '../layout';
 import { LinearGradient } from 'expo-linear-gradient';
 import { WindTile, Segment, GoldButton, InkButton, Toggle } from '../components/atoms';
 import { M, F, formatNum } from '../theme';
@@ -21,6 +22,8 @@ interface Props {
 
 export function HandSheet({ game, visible, onClose, onApply }: Props) {
   const [tab, setTab] = useState<'move' | 'overwrite'>(game.setup.inputMode);
+  const { isTablet } = useTabletLayout();
+  const sheetPad = isTablet ? 28 : 18;
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -33,7 +36,7 @@ export function HandSheet({ game, visible, onClose, onApply }: Props) {
           <View style={styles.handle} />
           <Text style={styles.title}>{roundLabel(game.round, game.setup)} 終了</Text>
           <Text style={styles.meta}>{game.round.honba}本場 ・ 供託 {game.round.riichiSticks}</Text>
-          <View style={styles.tabRow}>
+          <View style={[styles.tabRow, { paddingHorizontal: sheetPad }]}>
             <Segment
               options={[
                 { value: 'move', label: '内容入力' },
@@ -48,7 +51,7 @@ export function HandSheet({ game, visible, onClose, onApply }: Props) {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.tabContent}>
+            <View style={[styles.tabContent, { paddingHorizontal: sheetPad }]}>
               {tab === 'move'
                 ? <MoveTab game={game} onApply={onApply} onClose={onClose} />
                 : <OverwriteTab game={game} onApply={onApply} onClose={onClose} />
@@ -282,30 +285,33 @@ function FuCalcSection({
   type: 'ron' | 'tsumo';
   winnerIsDealer: boolean;
 }) {
+  const { isTablet } = useTabletLayout();
+  const hanCols = isTablet ? 9 : 4;
+  const fuCols = isTablet ? 6 : 4;
   const showFu = han <= 4;
   const result = calcFuScore(han, fu, winnerIsDealer);
 
   return (
     <View style={{ gap: 8 }}>
       <Text style={styles.fuSubLabel}>飜数</Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+      <ChipGrid columns={hanCols}>
         {HAN_OPTIONS.map(opt => (
-          <PointChip key={opt.han} active={han === opt.han} onPress={() => setHan(opt.han)} style={{ minWidth: 52 }}>
+          <PointChip key={opt.han} active={han === opt.han} onPress={() => setHan(opt.han)}>
             {opt.label}
           </PointChip>
         ))}
-      </View>
+      </ChipGrid>
 
       {showFu && (
         <>
           <Text style={styles.fuSubLabel}>符数</Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+          <ChipGrid columns={fuCols}>
             {FU_OPTIONS.map(f => (
-              <PointChip key={f} active={fu === f} onPress={() => setFu(f)} style={{ minWidth: 44 }}>
+              <PointChip key={f} active={fu === f} onPress={() => setFu(f)}>
                 {String(f)}
               </PointChip>
             ))}
-          </View>
+          </ChipGrid>
         </>
       )}
 
@@ -461,9 +467,22 @@ function CheckRow({
   );
 }
 
+function ChipGrid({ columns, children }: { columns: number; children: React.ReactNode }) {
+  const cells = React.Children.toArray(children);
+  return (
+    <View style={styles.chipGrid}>
+      {cells.map((child, index) => (
+        <View key={index} style={[styles.chipGridCell, { width: `${100 / columns}%` }]}>
+          {child}
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function PointChip({ active, onPress, children, style }: { active: boolean; onPress: () => void; children: string; style?: any }) {
   return (
-    <Pressable onPress={onPress} style={style}>
+    <Pressable onPress={onPress} style={[{ width: '100%' }, style]}>
       <LinearGradient
         colors={active ? [M.gold, M.goldDeep] : ['#2c1f12', '#1a1208']}
         start={{ x: 0, y: 0 }}
@@ -501,9 +520,19 @@ const styles = StyleSheet.create({
     fontFamily: F.serif, fontSize: 11, color: M.ivoryDim,
     textAlign: 'center', marginTop: 2, marginBottom: 12,
   },
-  tabRow: { paddingHorizontal: 18, marginBottom: 4 },
+  tabRow: { marginBottom: 4 },
   scroll: { flexGrow: 0 },
-  tabContent: { padding: 18, paddingBottom: 36 },
+  tabContent: { paddingTop: 18, paddingBottom: 36 },
+  chipGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: '100%',
+    marginHorizontal: -3,
+  },
+  chipGridCell: {
+    paddingHorizontal: 3,
+    paddingBottom: 6,
+  },
   typeRow: { flexDirection: 'row', gap: 6 },
   typeBtn: { padding: 12, borderRadius: 4, alignItems: 'center' },
   typeBtnText: { fontFamily: F.display, fontSize: 15, color: '#fef0e3', letterSpacing: 2 },

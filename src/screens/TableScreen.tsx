@@ -11,11 +11,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FeltBackground } from '../components/FeltBackground';
 import { SmallActionBtn } from '../components/atoms';
 import { WINDS, dealerOf, roundLabel, totalKyoku } from '../logic';
+import { useTabletLayout } from '../layout';
 import { F, M, formatNum } from '../theme';
 import type { Game } from '../types';
-
-const CARD_W = 180;
-const CARD_H = 80;
 
 interface Props {
   game: Game;
@@ -27,6 +25,9 @@ interface Props {
 
 export function TableScreen({ game, openSheet, onEnd, onUndo, dimmed }: Props) {
   const { width: screenW, height: screenH } = useWindowDimensions();
+  const { scale } = useTabletLayout();
+  const cardW = Math.round(180 * scale);
+  const cardH = Math.round(80 * scale);
   const insets = useSafeAreaInsets();
   const n = game.setup.n;
   const dealer = dealerOf(game.round, n);
@@ -48,37 +49,35 @@ export function TableScreen({ game, openSheet, onEnd, onUndo, dimmed }: Props) {
 
   // Card position calculator — compensates for RN rotation not affecting layout
   // Visual size after rotation: bottom/top → W×H, left/right → H×W
-  const edgeInset = 18;
+  const edgeInset = Math.round(18 * scale);
 
   function cardStyle(pos: 'bottom' | 'top' | 'left' | 'right') {
     switch (pos) {
       case 'bottom':
         return {
-          left: (screenW - CARD_W) / 2,
+          left: (screenW - cardW) / 2,
           bottom: insets.bottom + edgeInset,
           transform: [],
         };
       case 'top':
         return {
-          left: (screenW - CARD_W) / 2,
+          left: (screenW - cardW) / 2,
           top: insets.top + edgeInset,
           transform: [{ rotate: '180deg' }],
         };
       case 'right': {
-        // Visual center x = screenW - edgeInset - H/2, y = screenH/2
-        // Layout: left = visualCenterX - W/2, top = screenH/2 - H/2
-        const cx = screenW - edgeInset - CARD_H / 2;
+        const cx = screenW - edgeInset - cardH / 2;
         return {
-          left: cx - CARD_W / 2,
-          top: screenH / 2 - CARD_H / 2,
+          left: cx - cardW / 2,
+          top: screenH / 2 - cardH / 2,
           transform: [{ rotate: '-90deg' }],
         };
       }
       case 'left': {
-        const cx = edgeInset + CARD_H / 2;
+        const cx = edgeInset + cardH / 2;
         return {
-          left: cx - CARD_W / 2,
-          top: screenH / 2 - CARD_H / 2,
+          left: cx - cardW / 2,
+          top: screenH / 2 - cardH / 2,
           transform: [{ rotate: '90deg' }],
         };
       }
@@ -97,12 +96,13 @@ export function TableScreen({ game, openSheet, onEnd, onUndo, dimmed }: Props) {
         return (
           <View
             key={seat.idx}
-            style={[styles.card, { width: CARD_W, height: CARD_H }, posStyle]}
+            style={[styles.card, { width: cardW, height: cardH }, posStyle]}
           >
             <PlayerCard
               player={p}
               wind={wind}
               isDealer={isDealer}
+              scale={scale}
             />
           </View>
         );
@@ -118,9 +118,16 @@ interface PlayerCardProps {
   player: { name: string; score: number };
   wind: string;
   isDealer: boolean;
+  scale: number;
 }
 
-function PlayerCard({ player, wind, isDealer }: PlayerCardProps) {
+function PlayerCard({ player, wind, isDealer, scale }: PlayerCardProps) {
+  const windChip = Math.round(28 * scale);
+  const windFont = Math.round(18 * scale);
+  const nameFont = Math.round(13 * scale);
+  const scoreFont = Math.round(28 * scale);
+  const nameLeft = Math.round(46 * scale);
+
   return (
     <LinearGradient
       colors={isDealer ? ['#2a1f0a', '#1a1208'] : ['#1c130a', '#0d0905']}
@@ -138,27 +145,31 @@ function PlayerCard({ player, wind, isDealer }: PlayerCardProps) {
         colors={isDealer ? [M.goldHi, M.gold, M.goldDeep] : ['#fffaee', M.ivory, M.bone]}
         start={{ x: 0.2, y: 0 }}
         end={{ x: 0.8, y: 1 }}
-        style={styles.windChip}
+        style={[styles.windChip, { width: windChip, height: windChip, top: 8 * scale, left: 10 * scale }]}
       >
-        <Text style={[styles.windChipText, { color: isDealer ? M.redDeep : M.ink }]}>
+        <Text style={[styles.windChipText, { fontSize: windFont, lineHeight: windFont + 4, color: isDealer ? M.redDeep : M.ink }]}>
           {wind}
         </Text>
       </LinearGradient>
 
       {/* name */}
       <Text
-        style={[styles.playerName, { color: isDealer ? M.goldHi : M.ivory }]}
+        style={[styles.playerName, { fontSize: nameFont, left: nameLeft, color: isDealer ? M.goldHi : M.ivory }]}
         numberOfLines={1}
       >
         {player.name}
-        {isDealer && <Text style={styles.oyaLabel}> 親</Text>}
+        {isDealer && <Text style={[styles.oyaLabel, { fontSize: Math.round(10 * scale) }]}> 親</Text>}
       </Text>
 
       {/* score */}
       <Text
         style={[
           styles.score,
-          { color: player.score < 0 ? M.redHi : isDealer ? M.goldHi : M.ivory },
+          {
+            fontSize: scoreFont,
+            top: Math.round(26 * scale),
+            color: player.score < 0 ? M.redHi : isDealer ? M.goldHi : M.ivory,
+          },
         ]}
       >
         {formatNum(player.score)}
@@ -176,18 +187,20 @@ interface CenterPanelProps {
 }
 
 function CenterPanel({ game, openSheet, onEnd, onUndo }: CenterPanelProps) {
+  const { scale } = useTabletLayout();
   const total = totalKyoku(game.setup);
   const passed = game.round.wind * game.setup.n + game.round.kyoku;
+  const innerW = Math.round(160 * scale);
 
   return (
     <View style={styles.centerPanel}>
-      <View style={styles.centerInner}>
+      <View style={[styles.centerInner, { width: innerW }]}>
       {/* lacquered round disk */}
       <LinearGradient
         colors={['#2a1a08', '#0a0604']}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
-        style={styles.disk}
+        style={[styles.disk, { height: Math.round(82 * scale) }]}
       >
         {/* corner marks */}
         {[
@@ -204,7 +217,9 @@ function CenterPanel({ game, openSheet, onEnd, onUndo }: CenterPanelProps) {
             {'  '}
             <Text style={{ color: M.gold }}>{passed + 1}/{total}</Text>
           </Text>
-          <Text style={styles.diskRound}>{roundLabel(game.round, game.setup)}</Text>
+          <Text style={[styles.diskRound, { fontSize: Math.round(30 * scale), lineHeight: Math.round(34 * scale) }]}>
+            {roundLabel(game.round, game.setup)}
+          </Text>
           <View style={styles.diskFooter}>
             <Text style={styles.diskDetail}>
               {game.round.honba}
@@ -250,15 +265,15 @@ const styles = StyleSheet.create({
     width: 28, height: 28, borderRadius: 4,
     alignItems: 'center', justifyContent: 'center',
   },
-  windChipText: { fontFamily: F.display, fontSize: 18, lineHeight: 22 },
+  windChipText: { fontFamily: F.display },
   playerName: {
-    position: 'absolute', top: 10, left: 46, right: 12,
-    fontFamily: F.serifSemiBold, fontSize: 13, letterSpacing: 0.5,
+    position: 'absolute', top: 10, right: 12,
+    fontFamily: F.serifSemiBold, letterSpacing: 0.5,
   },
-  oyaLabel: { fontSize: 10, color: M.gold, letterSpacing: 2 },
+  oyaLabel: { color: M.gold, letterSpacing: 2 },
   score: {
-    position: 'absolute', top: 26, left: 12, right: 12,
-    fontFamily: F.serifBlack, fontSize: 28, letterSpacing: -0.5,
+    position: 'absolute', left: 12, right: 12,
+    fontFamily: F.serifBlack, letterSpacing: -0.5,
     textAlign: 'right',
     textShadowColor: '#000', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4,
   },
@@ -268,10 +283,10 @@ const styles = StyleSheet.create({
     zIndex: 5, pointerEvents: 'box-none' as any,
   },
   centerInner: {
-    width: 160, alignItems: 'stretch', gap: 8,
+    alignItems: 'stretch', gap: 8,
   },
   disk: {
-    height: 82, borderRadius: 8,
+    borderRadius: 8,
     borderWidth: 1.5, borderColor: M.gold,
     alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 6 },

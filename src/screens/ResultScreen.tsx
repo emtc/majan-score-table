@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { FeltBackground } from '../components/FeltBackground';
 import { GoldButton, InkButton } from '../components/atoms';
 import { BannerAd } from '../components/BannerAd';
+import { useTabletLayout } from '../layout';
 import { M, F, formatNum } from '../theme';
 import { settle } from '../logic';
 import { useSubscription } from '../context/SubscriptionContext';
@@ -52,19 +53,20 @@ export function ResultScreen({ game, onRematch, onChangeSetup, onHome }: Props) 
           <Pressable onPress={onHome} style={styles.homeLink}>
             <Text style={styles.homeLinkText}>ホームへ</Text>
           </Pressable>
-          {!isSubscribed && (
-            <Pressable onPress={openModal} style={styles.removeAdsLink}>
-              <Text style={styles.removeAdsText}>✦ 広告を非表示にする</Text>
-            </Pressable>
-          )}
+          <Pressable onPress={openModal} style={styles.removeAdsLink}>
+            <Text style={styles.removeAdsText}>✦ 広告を非表示にする</Text>
+          </Pressable>
         </View>
       </ScrollView>
-      <BannerAd />
+      <View style={{ paddingBottom: insets.bottom }}>
+        <BannerAd />
+      </View>
     </View>
   );
 }
 
 function RankRow({ p }: { p: SettledPlayer }) {
+  const { scale } = useTabletLayout();
   const isFirst = p.rank === 1;
   return (
     <LinearGradient
@@ -90,7 +92,7 @@ function RankRow({ p }: { p: SettledPlayer }) {
           <Text style={[styles.rankName, { color: isFirst ? M.goldHi : M.ivory, flex: 1 }]} numberOfLines={1}>
             {p.name}
           </Text>
-          <Text style={[styles.rankScore, { color: isFirst ? M.goldHi : M.ivoryDim }]}>
+          <Text style={[styles.rankScore, { fontSize: Math.round(12 * scale), color: isFirst ? M.goldHi : M.ivoryDim }]}>
             {formatNum(p.score)}点
           </Text>
         </View>
@@ -105,7 +107,14 @@ function RankRow({ p }: { p: SettledPlayer }) {
 
       {/* total */}
       <Text
-        style={[styles.rankTotal, { color: p.total >= 0 ? (isFirst ? M.goldHi : M.green) : M.redHi }]}
+        style={[
+          styles.rankTotal,
+          {
+            fontSize: Math.round(26 * scale),
+            width: Math.round(90 * scale),
+            color: p.total >= 0 ? (isFirst ? M.goldHi : M.green) : M.redHi,
+          },
+        ]}
         numberOfLines={1}
         adjustsFontSizeToFit
       >

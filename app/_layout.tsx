@@ -31,27 +31,43 @@ export default function RootLayout() {
     ShipporiMincho_800ExtraBold,
   });
 
-  // ATT 許可ダイアログの完了を待つ（iOS のみ）
-  // 広告 SDK がデータ収集を始める前に許可を得るため、
-  // 許可が解決するまでスプラッシュ画面を維持しアプリをレンダリングしない
-  const [attReady, setAttReady] = useState(Platform.OS !== 'ios');
+  // iOS: ATT のあとに AdMob 初期化。Android: AdMob のみ初期化。
+  // いずれも完了するまでメイン UI を出さない（初回広告リクエストより前に initialize する）
+  const [startupReady, setStartupReady] = useState(Platform.OS === 'web');
 
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (!loaded || Platform.OS !== 'ios') return;
-    requestTrackingPermissionsAsync().finally(() => {
-      setAttReady(true);
-    });
+    if (!loaded) return;
+    if (Platform.OS === 'web') {
+      setStartupReady(true);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        if (Platform.OS === 'ios') {
+          await requestTrackingPermissionsAsync();
+        }
+        const mobileAds = require('react-native-google-mobile-ads').default;
+        await mobileAds().initialize();
+      } catch (e) {
+        console.warn('Mobile Ads startup:', e);
+      }
+      if (!cancelled) setStartupReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [loaded]);
 
   useEffect(() => {
-    if (loaded && attReady) SplashScreen.hideAsync();
-  }, [loaded, attReady]);
+    if (loaded && startupReady) SplashScreen.hideAsync();
+  }, [loaded, startupReady]);
 
-  if (!loaded || !attReady) return null;
+  if (!loaded || !startupReady) return null;
 
   return (
     <SubscriptionProvider>

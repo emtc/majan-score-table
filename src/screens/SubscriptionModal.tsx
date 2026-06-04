@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator, Linking, Modal, Pressable, StyleSheet, Text, View,
 } from 'react-native';
@@ -10,8 +10,20 @@ import { useSubscription } from '../context/SubscriptionContext';
 const PRIVACY_URL = 'https://emtc.github.io/majan-score-table/privacy-policy.html';
 const EULA_URL = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 
+type Plan = 'lifetime' | 'subscription';
+
+const PLANS: { id: Plan; label: string; price: string; note: string; recommended?: boolean }[] = [
+  { id: 'lifetime',     label: '買い切りプラン',   price: '¥980',       note: '一度の購入で永久に有効', recommended: true },
+  { id: 'subscription', label: '月額プラン',       price: '¥250 / 月', note: 'いつでもキャンセル可能' },
+];
+
 export function SubscriptionModal() {
   const { modalVisible, closeModal, purchase, restore, loading } = useSubscription();
+  const [selectedPlan, setSelectedPlan] = useState<Plan>('lifetime');
+
+  const handlePurchase = () => purchase(selectedPlan);
+
+  const isSubscriptionSelected = selectedPlan === 'subscription';
 
   return (
     <Modal
@@ -27,12 +39,38 @@ export function SubscriptionModal() {
           <View style={styles.handle} />
 
           <Text style={styles.title}>広告を非表示にする</Text>
-          <Text style={styles.subtitle}>月額 250円（税込・自動更新）</Text>
 
+          {/* plan cards */}
+          <View style={styles.planCards}>
+            {PLANS.map(plan => {
+              const isSelected = selectedPlan === plan.id;
+              return (
+                <Pressable
+                  key={plan.id}
+                  onPress={() => setSelectedPlan(plan.id)}
+                  style={[styles.planCard, isSelected && styles.planCardSelected]}
+                >
+                  {plan.recommended && (
+                    <View style={styles.recommendedBadge}>
+                      <Text style={styles.recommendedText}>★ おすすめ</Text>
+                    </View>
+                  )}
+                  <Text style={[styles.planLabel, isSelected && styles.planLabelSelected]}>
+                    {plan.label}
+                  </Text>
+                  <Text style={[styles.planPrice, isSelected && styles.planPriceSelected]}>
+                    {plan.price}
+                  </Text>
+                  <Text style={styles.planNote}>{plan.note}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* shared benefits */}
           <View style={styles.benefitList}>
             {[
               'アプリ上の広告はすべて非表示',
-              'いつでもキャンセル可能',
               '購入はすべての端末で有効',
             ].map((text, i) => (
               <View key={i} style={styles.benefitRow}>
@@ -48,7 +86,7 @@ export function SubscriptionModal() {
             ))}
           </View>
 
-          <Pressable onPress={purchase} disabled={loading} style={styles.purchaseBtn}>
+          <Pressable onPress={handlePurchase} disabled={loading} style={styles.purchaseBtn}>
             <LinearGradient
               colors={loading ? ['#6a5a3a', '#3a2e18', '#3a2e18'] : [M.goldHi, M.gold, M.goldDeep]}
               start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}
@@ -71,7 +109,7 @@ export function SubscriptionModal() {
 
           <Text style={styles.legal}>
             購入はApple IDに課金されます。{'\n'}
-            次回更新日の24時間前までキャンセルできます。
+            {isSubscriptionSelected && '次回更新日の24時間前までキャンセルできます。'}
           </Text>
 
           <View style={styles.legalLinks}>
@@ -105,17 +143,46 @@ const styles = StyleSheet.create({
   handle: {
     width: 40, height: 4, borderRadius: 2,
     backgroundColor: M.gold, opacity: 0.3,
-    marginTop: 12, marginBottom: 28,
+    marginTop: 12, marginBottom: 24,
   },
   title: {
     fontFamily: F.serifBold, fontSize: 20, color: M.ivory,
-    letterSpacing: 2, marginBottom: 8,
+    letterSpacing: 2, marginBottom: 20,
   },
-  subtitle: {
-    fontFamily: F.serif, fontSize: 13, color: M.gold,
-    letterSpacing: 1, marginBottom: 24,
+  planCards: { width: '100%', gap: 10, marginBottom: 24 },
+  planCard: {
+    width: '100%', padding: 16, borderRadius: 8,
+    borderWidth: 1.5, borderColor: `${M.gold}33`,
+    backgroundColor: '#1a1007',
   },
-  benefitList: { width: '100%', gap: 14, marginBottom: 28 },
+  planCardSelected: {
+    borderColor: M.gold,
+    backgroundColor: '#221508',
+  },
+  recommendedBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: `${M.gold}22`,
+    borderWidth: 1, borderColor: `${M.gold}66`,
+    borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2,
+    marginBottom: 8,
+  },
+  recommendedText: {
+    fontFamily: F.serifMedium, fontSize: 10, color: M.gold, letterSpacing: 1,
+  },
+  planLabel: {
+    fontFamily: F.serifBold, fontSize: 15, color: M.ivoryDim, letterSpacing: 1,
+  },
+  planLabelSelected: { color: M.ivory },
+  planPrice: {
+    fontFamily: F.display, fontSize: 22, color: M.ivoryDim,
+    marginTop: 4, letterSpacing: 1,
+  },
+  planPriceSelected: { color: M.goldHi },
+  planNote: {
+    fontFamily: F.serif, fontSize: 11, color: M.ivoryDim,
+    opacity: 0.6, marginTop: 4, letterSpacing: 0.5,
+  },
+  benefitList: { width: '100%', gap: 12, marginBottom: 24 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   checkCircle: {
     width: 22, height: 22, borderRadius: 11,
@@ -147,6 +214,7 @@ const styles = StyleSheet.create({
   legal: {
     fontFamily: F.serif, fontSize: 10, color: M.ivoryDim,
     opacity: 0.35, textAlign: 'center', lineHeight: 16, marginTop: 20,
+    minHeight: 32,
   },
   legalLinks: {
     flexDirection: 'row', alignItems: 'center', marginTop: 10,
