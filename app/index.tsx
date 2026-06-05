@@ -39,7 +39,12 @@ export default function App() {
   const undo = useCallback(() => {
     if (!game || !game.history?.length) return;
     const last = game.history[game.history.length - 1];
-    setGame({ ...restoreGame(game, last), history: game.history.slice(0, -1), finished: false });
+    setGame({
+      ...restoreGame(game, last),
+      history: game.history.slice(0, -1),
+      handResults: (game.handResults ?? []).slice(0, -1),
+      finished: false,
+    });
   }, [game]);
 
   const endNow = useCallback(() => {

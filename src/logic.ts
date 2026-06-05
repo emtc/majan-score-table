@@ -1,4 +1,4 @@
-import type { Game, Player, Round, Setup, Snapshot, SettledPlayer, Payment } from './types';
+import type { Game, HandResult, Player, Round, Setup, Snapshot, SettledPlayer, Payment } from './types';
 
 export const WINDS = ['東', '南', '西', '北'];
 
@@ -14,6 +14,7 @@ export function buildGame(setup: Setup): Game {
     })),
     round: { wind: 0, kyoku: 0, honba: 0, riichiSticks: 0 },
     history: [],
+    handResults: [],
     finished: false,
   };
 }
@@ -74,7 +75,8 @@ export function applyTsumo(
   newG.players[winnerIdx].scored = true;
   newG.round.riichiSticks = 0;
 
-  return advanceRound(newG, winnerIdx === dealer);
+  const result = advanceRound(newG, winnerIdx === dealer);
+  return appendHandResult(result, { type: 'tsumo', winners: [winnerIdx], dealIn: null, riichi: riichiPlayers });
 }
 
 export function applyRon(
@@ -96,7 +98,8 @@ export function applyRon(
   newG.players[winnerIdx].scored = true;
   newG.round.riichiSticks = 0;
 
-  return advanceRound(newG, winnerIdx === dealer);
+  const result = advanceRound(newG, winnerIdx === dealer);
+  return appendHandResult(result, { type: 'ron', winners: [winnerIdx], dealIn: loserIdx, riichi: riichiPlayers });
 }
 
 export function applyRyukyoku(
@@ -119,12 +122,28 @@ export function applyRyukyoku(
   }
 
   const dealer = dealerOf(g.round, g.setup.n);
-  return advanceRound(newG, tenpaiFlags[dealer], true);
+  const result = advanceRound(newG, tenpaiFlags[dealer], true);
+  return appendHandResult(result, { type: 'ryukyoku', winners: [], dealIn: null, riichi: riichiPlayers });
 }
 
-export function applyOverwrite(g: Game, scores: number[], dealerKeep = false): Game {
+export function applyOverwrite(
+  g: Game,
+  scores: number[],
+  dealerKeep = false,
+  stats?: { winners: number[]; dealIn: number | null; riichi: number[] },
+): Game {
   const newG = { ...g, players: g.players.map((p, i) => ({ ...p, score: scores[i] })) };
-  return advanceRound(newG, dealerKeep);
+  const result = advanceRound(newG, dealerKeep);
+  return appendHandResult(result, {
+    type: 'overwrite',
+    winners: stats?.winners ?? [],
+    dealIn: stats?.dealIn ?? null,
+    riichi: stats?.riichi ?? [],
+  });
+}
+
+function appendHandResult(g: Game, r: HandResult): Game {
+  return { ...g, handResults: [...(g.handResults ?? []), r] };
 }
 
 function advanceRound(g: Game, dealerKeep: boolean, ryukyoku = false): Game {

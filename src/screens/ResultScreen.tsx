@@ -42,9 +42,12 @@ export function ResultScreen({ game, onRematch, onChangeSetup, onHome }: Props) 
         </View>
 
         {/* rankings */}
-        <View style={{ gap: 8, marginBottom: 36 }}>
+        <View style={{ gap: 8, marginBottom: 24 }}>
           {final.map((p, i) => <RankRow key={i} p={p} />)}
         </View>
+
+        {/* stats */}
+        <StatsSection game={game} />
 
         {/* actions */}
         <View style={{ gap: 10 }}>
@@ -61,6 +64,37 @@ export function ResultScreen({ game, onRematch, onChangeSetup, onHome }: Props) 
       <View style={{ paddingBottom: insets.bottom }}>
         <BannerAd />
       </View>
+    </View>
+  );
+}
+
+function StatsSection({ game }: { game: Game }) {
+  const results = game.handResults ?? [];
+  if (results.length === 0) return null;
+
+  const total = results.length;
+  const draws = results.filter(r => r.type === 'ryukyoku').length;
+
+  return (
+    <View style={styles.statsContainer}>
+      <View style={styles.statsHeader}>
+        <Text style={styles.statsTitle}>対局統計</Text>
+        <Text style={styles.statsSummary}>全 {total} 局  ·  流局 {draws} 局</Text>
+      </View>
+      <View style={styles.statsTableHeader}>
+        <View style={{ flex: 2 }} />
+        <Text style={styles.statsColLabel}>リーチ</Text>
+        <Text style={styles.statsColLabel}>和了</Text>
+        <Text style={styles.statsColLabel}>放銃</Text>
+      </View>
+      {game.players.map((p, i) => (
+        <View key={i} style={styles.statsRow}>
+          <Text style={styles.statsPlayerName} numberOfLines={1}>{p.name}</Text>
+          <Text style={styles.statsCell}>{results.filter(r => r.riichi.includes(i)).length}</Text>
+          <Text style={styles.statsCell}>{results.filter(r => r.winners.includes(i)).length}</Text>
+          <Text style={styles.statsCell}>{results.filter(r => r.dealIn === i).length}</Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -152,6 +186,33 @@ const styles = StyleSheet.create({
   rankScore: { fontFamily: F.serif, fontSize: 12, marginLeft: 8 },
   rankDetail: { fontFamily: F.serif, fontSize: 11, color: M.ivoryDim, marginTop: 3 },
   rankTotal: { fontFamily: F.display, fontSize: 26, letterSpacing: -0.5, width: 90, textAlign: 'right' },
+  statsContainer: {
+    marginBottom: 28,
+    borderRadius: 6,
+    borderWidth: 1, borderColor: `${M.gold}44`,
+    overflow: 'hidden',
+  },
+  statsHeader: {
+    flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between',
+    paddingHorizontal: 14, paddingVertical: 10,
+    backgroundColor: 'rgba(255,210,100,0.06)',
+    borderBottomWidth: 1, borderBottomColor: `${M.gold}33`,
+  },
+  statsTitle: { fontFamily: F.display, fontSize: 13, color: M.gold, letterSpacing: 3 },
+  statsSummary: { fontFamily: F.serif, fontSize: 11, color: M.ivoryDim },
+  statsTableHeader: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 14, paddingVertical: 6,
+    borderBottomWidth: 1, borderBottomColor: `${M.gold}22`,
+  },
+  statsColLabel: { flex: 1, fontFamily: F.serifMedium, fontSize: 10, color: M.gold, textAlign: 'center', letterSpacing: 1 },
+  statsRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 14, paddingVertical: 8,
+    borderBottomWidth: 1, borderBottomColor: `${M.gold}18`,
+  },
+  statsPlayerName: { flex: 2, fontFamily: F.serifSemiBold, fontSize: 13, color: M.ivory },
+  statsCell: { flex: 1, fontFamily: F.serifBold, fontSize: 14, color: M.ivoryDim, textAlign: 'center' },
   homeLink: { alignItems: 'center', paddingVertical: 10 },
   homeLinkText: { fontFamily: F.serif, fontSize: 15, color: M.ivory, letterSpacing: 4, opacity: 0.75 },
   removeAdsLink: { alignItems: 'center', paddingVertical: 8 },

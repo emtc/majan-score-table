@@ -36,11 +36,19 @@ export interface Snapshot {
   round: Round;
 }
 
+export interface HandResult {
+  type: 'tsumo' | 'ron' | 'ryukyoku' | 'overwrite';
+  winners: number[];
+  dealIn: number | null;
+  riichi: number[];
+}
+
 export interface Game {
   setup: Setup;
   players: Player[];
   round: Round;
   history: Snapshot[];
+  handResults: HandResult[];
   finished: boolean;
 }
 
