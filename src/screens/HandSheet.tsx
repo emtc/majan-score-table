@@ -364,31 +364,54 @@ function OverwriteTab({ game, onApply, onClose }: { game: Game; onApply: (g: Gam
 
   return (
     <View style={{ gap: 10 }}>
+      {/* 点数入力 */}
       {game.players.map((p, i) => (
-        <View key={i} style={{ gap: 5 }}>
-          <View style={styles.overwriteRow}>
-            <WindTile
-              wind={WINDS[(i - dealer + game.setup.n) % game.setup.n]}
-              oya={i === dealer}
-              size={36}
-            />
-            <Text style={styles.overwriteName}>{p.name}</Text>
-            <TextInput
-              value={String(scores[i])}
-              onChangeText={t => {
-                const a = [...scores]; a[i] = parseInt(t, 10) || 0; setScores(a);
-              }}
-              keyboardType="number-pad"
-              style={[styles.bigInput, { width: 130, textAlign: 'right' }]}
-            />
-          </View>
-          <View style={styles.overwriteStatRow}>
-            <MiniCheck label="リーチ" checked={riichi[i]} onPress={() => toggleRiichi(i)} />
-            <MiniCheck label="和了" checked={winners[i]} onPress={() => toggleWinner(i)} />
-            <MiniCheck label="放銃" checked={dealIn === i} onPress={() => toggleDealIn(i)} />
-          </View>
+        <View key={i} style={styles.overwriteRow}>
+          <WindTile
+            wind={WINDS[(i - dealer + game.setup.n) % game.setup.n]}
+            oya={i === dealer}
+            size={36}
+          />
+          <Text style={styles.overwriteName}>{p.name}</Text>
+          <TextInput
+            value={String(scores[i])}
+            onChangeText={t => {
+              const a = [...scores]; a[i] = parseInt(t, 10) || 0; setScores(a);
+            }}
+            keyboardType="number-pad"
+            style={[styles.bigInput, { width: 130, textAlign: 'right', paddingVertical: 8 }]}
+          />
         </View>
       ))}
+
+      {/* 統計テーブル */}
+      <View style={{ gap: 8, marginTop: 4 }}>
+        <Text style={styles.blockLabel}>統　計</Text>
+        <View style={styles.overwriteStatsTable}>
+          <View style={[styles.overwriteStatsRow, styles.overwriteStatsHeaderRow]}>
+            <View style={{ flex: 2 }} />
+            <Text style={styles.overwriteStatsColLabel}>リーチ</Text>
+            <Text style={styles.overwriteStatsColLabel}>和了</Text>
+            <Text style={styles.overwriteStatsColLabel}>放銃</Text>
+          </View>
+          {game.players.map((p, i) => (
+            <View key={i} style={styles.overwriteStatsRow}>
+              <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <WindTile
+                  wind={WINDS[(i - dealer + game.setup.n) % game.setup.n]}
+                  oya={i === dealer}
+                  size={24}
+                />
+                <Text style={styles.overwriteStatsName} numberOfLines={1}>{p.name}</Text>
+              </View>
+              <StatCell checked={riichi[i]} onPress={() => toggleRiichi(i)} />
+              <StatCell checked={winners[i]} onPress={() => toggleWinner(i)} />
+              <StatCell checked={dealIn === i} onPress={() => toggleDealIn(i)} />
+            </View>
+          ))}
+        </View>
+      </View>
+
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4 }}>
         <Text style={{ fontFamily: F.serifSemiBold, fontSize: 13, color: M.ivory }}>親が連荘</Text>
         <Toggle value={renchan} onChange={setRenchan} />
@@ -401,13 +424,12 @@ function OverwriteTab({ game, onApply, onClose }: { game: Game; onApply: (g: Gam
   );
 }
 
-function MiniCheck({ label, checked, onPress }: { label: string; checked: boolean; onPress: () => void }) {
+function StatCell({ checked, onPress }: { checked: boolean; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+    <Pressable onPress={onPress} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
       <View style={[styles.miniCheckBox, checked && { backgroundColor: M.gold, borderColor: M.gold }]}>
         {checked && <Text style={{ color: M.ink, fontSize: 10, fontWeight: '800' }}>✓</Text>}
       </View>
-      <Text style={{ fontFamily: F.serif, fontSize: 12, color: checked ? M.gold : M.ivoryDim }}>{label}</Text>
     </Pressable>
   );
 }
@@ -597,7 +619,25 @@ const styles = StyleSheet.create({
   },
   overwriteRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   overwriteName: { flex: 1, fontFamily: F.serifSemiBold, fontSize: 14, color: M.ivory },
-  overwriteStatRow: { flexDirection: 'row', gap: 20, paddingLeft: 46 },
+  overwriteStatsTable: {
+    borderRadius: 6,
+    borderWidth: 1, borderColor: `${M.gold}44`,
+    overflow: 'hidden',
+  },
+  overwriteStatsHeaderRow: {
+    backgroundColor: 'rgba(255,210,100,0.06)',
+    borderBottomWidth: 1, borderBottomColor: `${M.gold}33`,
+  },
+  overwriteStatsRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 12, paddingVertical: 10,
+    borderBottomWidth: 1, borderBottomColor: `${M.gold}18`,
+  },
+  overwriteStatsColLabel: {
+    flex: 1, fontFamily: F.serifMedium, fontSize: 10,
+    color: M.gold, textAlign: 'center', letterSpacing: 1,
+  },
+  overwriteStatsName: { flex: 1, fontFamily: F.serifSemiBold, fontSize: 13, color: M.ivory },
   miniCheckBox: {
     width: 18, height: 18, borderRadius: 3,
     borderWidth: 1.5, borderColor: `${M.gold}66`,

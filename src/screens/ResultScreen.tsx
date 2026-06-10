@@ -52,7 +52,6 @@ export function ResultScreen({ game, onRematch, onChangeSetup, onHome }: Props) 
         {/* actions */}
         <View style={{ gap: 10 }}>
           <GoldButton onPress={onRematch}>もう一戦</GoldButton>
-          <InkButton onPress={onChangeSetup}>新規対局</InkButton>
           <Pressable onPress={onHome} style={styles.homeLink}>
             <Text style={styles.homeLinkText}>ホームへ</Text>
           </Pressable>
@@ -168,23 +167,23 @@ const styles = StyleSheet.create({
   },
   subtitle: { fontFamily: F.serif, fontSize: 11, color: M.ivoryDim, marginTop: 4, letterSpacing: 4 },
   rankRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 14, borderRadius: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    padding: 10, borderRadius: 6,
     borderWidth: 1, borderColor: `${M.gold}66`,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4, shadowRadius: 4, elevation: 4,
   },
   rankBadge: {
-    width: 44, height: 44, borderRadius: 4,
+    width: 36, height: 36, borderRadius: 4,
     flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center',
-    paddingBottom: 4,
+    paddingBottom: 3,
     borderWidth: 1, borderColor: `${M.gold}55`,
   },
-  rankNum: { fontFamily: F.display, fontSize: 22 },
-  rankSuffix: { fontFamily: F.display, fontSize: 9, marginBottom: 2, marginLeft: 1 },
-  rankName: { fontFamily: F.serifBold, fontSize: 16 },
-  rankScore: { fontFamily: F.serif, fontSize: 12, marginLeft: 8 },
-  rankDetail: { fontFamily: F.serif, fontSize: 11, color: M.ivoryDim, marginTop: 3 },
+  rankNum: { fontFamily: F.display, fontSize: 18 },
+  rankSuffix: { fontFamily: F.display, fontSize: 8, marginBottom: 2, marginLeft: 1 },
+  rankName: { fontFamily: F.serifBold, fontSize: 14 },
+  rankScore: { fontFamily: F.serif, fontSize: 11, marginLeft: 8 },
+  rankDetail: { fontFamily: F.serif, fontSize: 10, color: M.ivoryDim, marginTop: 2 },
   rankTotal: { fontFamily: F.display, fontSize: 26, letterSpacing: -0.5, width: 90, textAlign: 'right' },
   statsContainer: {
     marginBottom: 28,
